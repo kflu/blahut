@@ -24,7 +24,7 @@ int main()
 
 
 
-    blahut_cap_iterate_over_s(cap,"kefeilu");
+    blahut_cap_iterate_over_s(cap,"expense-capacity.dat");
 
     blahut_cap_free(cap);
 
