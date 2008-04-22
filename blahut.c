@@ -6,16 +6,14 @@
 #define DEFAULT_MAX_IT UINT_MAX
 #define DOUBLE_COMP_LIMIT 1e8
 
-#ifdef XXXXXXXXXXXXXX
 /* 
- * Many systems already have log2 function. If not, remove the 
+ * Many systems already have my_log2 function. If not, remove the 
  * ifdef, endif preprocessor to enable this function.
  */
-inline static double log2(const double value)
+inline static double my_log2(const double value)
 {
     return log10(value)/log10(2);
 }
-#endif
 
 static int 
 vector_isnonneg(const gsl_vector* vec)
@@ -157,7 +155,7 @@ sum_Q_log (const blahut_cap * cap, int j)
     for (k; k<cap->numOut; k++) {
 	Q_kj = gsl_matrix_get(cap->Q, j, k);
 	/* use the convention that 0log0 = 0 */
-	sum += (Q_kj == 0 ? 0 : Q_kj * log2 (Q_kj/sum_p_Q(cap,k)));
+	sum += (Q_kj == 0 ? 0 : Q_kj * my_log2 (Q_kj/sum_p_Q(cap,k)));
     }
 
     return sum;
@@ -182,13 +180,13 @@ inline static double calc_I_L (blahut_cap * cap)
     for (j=0; j<cap->numIn; j++) {
 	sum += gsl_vector_get(cap->p,j) * gsl_vector_get(cap->c,j);
     }
-    cap->I_L = log2(sum);
+    cap->I_L = my_log2(sum);
     return cap->I_L;
 }
 
 inline static double calc_I_U (blahut_cap * cap)
 {
-    cap->I_U = log2(gsl_vector_max ( cap->c ));
+    cap->I_U = my_log2(gsl_vector_max ( cap->c ));
     return cap->I_U;
 }
 
