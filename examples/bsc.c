@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "blahut.h"
+
+int main()
+{
+    /* Specify the forward transition matrix
+     * and the expense schedule vector */
+    double p = 0; 	/* the cross over probability */
+    double QQ[] = {1-p, p, p, 1-p};
+    double ee[] = {1, 0};
+
+    /* Prepare a gsl_matrix representation of Q,
+     * and a gsl_vector representation of e.
+     * For more information on gsl vector/matrix,
+     * refer to gsl manual */
+    gsl_matrix_view Q_view = gsl_matrix_view_array(QQ,2,2);
+    gsl_matrix * Q = &(Q_view.matrix);
+
+    gsl_vector_view e_view = gsl_vector_view_array(ee,2);
+    gsl_vector * e = &(e_view.vector);
+
+    /* Initialize a muanipulating object of Blahut algorithm */
+    blahut_cap * cap = blahut_cap_init(Q,e);
+    blahut_cap_setSRange(cap, 0, 1000, 0.01);
+
+    /* Begin the estimation of C(E) curve.
+     * The curve is stored in gsl_matrix * cap->ce_curve 
+     * Meanwhile the curve is also write into file "ce.txt" */
+    blahut_cap_iterate_over_s(cap, "ce.txt"); 
+
+    /* Free the memory allocated for cap */
+    blahut_cap_free(cap);
+
+    exit(0);
+}
+
