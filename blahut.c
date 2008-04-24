@@ -33,6 +33,7 @@ matrix_isnonneg(const gsl_matrix* mat)
     unsigned int j,k;
     for (j=0;j<mat->size1;j++) {
 	for (k=0;k<mat->size2;k++) {
+	    //printf("%g\n",gsl_matrix_get(mat,j,k));
 	    if (gsl_matrix_get(mat,j,k) < 0.0) {
 		return 0;
 	    }
