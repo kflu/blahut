@@ -48,39 +48,29 @@ blahut_cap_init( const gsl_matrix* Q,
     unsigned int i=0, k=0;
     blahut_cap * cap = (blahut_cap*) malloc (sizeof(blahut_cap));
     if (!cap) {
-	fprintf(stderr, "Not enough memory when allocating a blahut_cap.\n");
+	fprintf(stderr, "(E) Not enough memory when allocating a blahut_cap.\n");
 	exit(1);
     }
     memset(cap, 0, sizeof(blahut_cap));
 
     /* Check validity of Q and e */
     if (Q == NULL || e == NULL) {
-	fprintf(stderr, "Q or e is NULL pointer.\n");
+	fprintf(stderr, "(E) Q or e is NULL pointer.\n");
 	exit(1);
     }
     if (Q->size1 != e->size) {
-	fprintf(stderr, "Q's # rows is not equal to e's size.\n");
+	fprintf(stderr, "(E) Q's # rows is not equal to e's size.\n");
 	exit(1);
     } else if (Q->size2 <= 0) {
-	fprintf(stderr, "Q's # columns should not be negative.\n");
+	fprintf(stderr, "(E) Q's # columns should not be negative.\n");
 	exit(1);
     } else if (!vector_isnonneg(e) || !matrix_isnonneg(Q)) {
-	fprintf(stderr, "Q or e contains negative elements.\n");
+	fprintf(stderr, "(E) Q or e contains negative elements.\n");
 	exit(1);
     }
 
     /* Check the validity of Q and e */
-    double sum_e=0, sum_Q=0;
-
-#ifdef XXXXXXXXXXXXXXXX
-    for (i=0;i<e->size;i++) {
-	sum_e += gsl_vector_get(e,i);
-    }
-    if (fabs(sum_e - 1.0) > DOUBLE_COMP_LIMIT) {
-	fprintf(stderr, "Sum of e seems not to be 1.\n");
-	exit(2);
-    }
-#endif
+    double sum_Q=0;
 
     /* each row of Q should sum to 1 */
     for (i=0;i<Q->size1;i++) {
@@ -89,7 +79,7 @@ blahut_cap_init( const gsl_matrix* Q,
 	    sum_Q += gsl_matrix_get(Q, i, k);
 	}
 	if (fabs(sum_Q - 1.0) > DOUBLE_COMP_LIMIT) {
-	    fprintf(stderr, "Sum over row %d of Q seems not to be 1.\n", k);
+	    fprintf(stderr, "(E) Sum over row %d of Q seems not to be 1.\n", k);
 	    exit(2);
 	}
     }
@@ -125,7 +115,9 @@ blahut_cap_free( blahut_cap* cap)
     gsl_matrix_free(cap->P);
     gsl_vector_free(cap->p);
     gsl_vector_free(cap->c);
-    gsl_matrix_free(cap->ce_curve);
+    gsl_matrix_free(cap->ce_curve.p);
+    gsl_vector_free(cap->ce_curve.E);
+    gsl_vector_free(cap->ce_curve.C);
 
     free(cap);
 }
@@ -137,7 +129,7 @@ sum_p_Q (const blahut_cap * cap, int k)
 {
     register int j = 0;
     register double sum = 0;
-    for (j; j<cap->numIn; j++) {
+    for (j=0; j<cap->numIn; j++) {
 	sum += gsl_vector_get(cap->p, j) * gsl_matrix_get(cap->Q, j, k);
     }
     return sum;
@@ -152,7 +144,7 @@ sum_Q_log (const blahut_cap * cap, int j)
     register double Q_kj;
     register double sum = 0;
 
-    for (k; k<cap->numOut; k++) {
+    for (k=0; k<cap->numOut; k++) {
 	Q_kj = gsl_matrix_get(cap->Q, j, k);
 	/* use the convention that 0log0 = 0 */
 	sum += (Q_kj == 0 ? 0 : Q_kj * my_log2 (Q_kj/sum_p_Q(cap,k)));
@@ -235,7 +227,7 @@ blahut_cap_calc( blahut_cap * cap )
 	    break;
 	} else if ( isnan(cap->I_U) || isnan(cap->I_L) ) {
 #ifdef DEBUG_PRINT_WARNING
-	    fprintf(stdout, "I_U or I_L is NaN, terminate loop.\n");
+	    fprintf(stdout, "(I) I_U or I_L is NaN, terminate loop.\n");
 #endif
 	    break;
 	}
@@ -261,18 +253,31 @@ blahut_cap_set_p_uniform( blahut_cap * cap )
     return cap;
 }
 
-gsl_matrix * 
+static blahut_ce_curve * 
+ce_curve_init( blahut_cap * cap )
+{
+    cap->ce_curve.len = (unsigned int)floor((cap->s_U - cap->s_L)/cap->s_d);
+    cap->ce_curve.p = gsl_matrix_calloc(cap->ce_curve.len, cap->numIn);
+    cap->ce_curve.E = gsl_vector_calloc(cap->ce_curve.len);
+    cap->ce_curve.C = gsl_vector_calloc(cap->ce_curve.len);
+
+    return &(cap->ce_curve);
+}
+
+blahut_ce_curve  
 blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename)
 {
-    unsigned int NumS = floor((cap->s_U - cap->s_L)/cap->s_d);
-    cap->ce_curve = gsl_matrix_calloc(NumS,2);
+    /* Initialize the field 'cap->ce_curve' for storing data */
+    ce_curve_init(cap);
 
 #ifdef DEBUG
-    fprintf(stdout, "Calculating C(E) curve ...\n");
+    fprintf(stdout, "(I) Calculating C(E) curve ...\n");
 #endif
 
-    unsigned int i;
+    unsigned int NumS = cap->ce_curve.len; /* # samples on the curve */
+    unsigned int i,j;
     double step = cap->s_d;
+    /* Begin iterating over s */
     for (i=0,cap->s = cap->s_L; i<NumS; i++, cap->s+=step) {
 	//printf("%d, %g\n",i,cap->s);
 	blahut_cap_set_p_uniform(cap);
@@ -281,31 +286,46 @@ blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename)
 	/* stop iterating */
 	if (cap->C == 0 || cap->E == 0) {
 #ifdef DEBUG_PRINT_WARNING
-	    fprintf(stdout, "C = 0 or E = 0 encountered, break the iteration.\n");
+	    fprintf(stdout, "(W) C = 0 or E = 0 encountered, break the iteration.\n");
 #endif
 	    break;
 	}
-	gsl_matrix_set(cap->ce_curve, i, 0, cap->E);
-	gsl_matrix_set(cap->ce_curve, i, 1, cap->C);
+
+	/* Store the result */
+	{
+	    gsl_vector_view p_view = gsl_matrix_row(cap->ce_curve.p, i);
+	    gsl_vector_memcpy(&p_view.vector, cap->p);
+
+	    gsl_vector_set(cap->ce_curve.E, i, cap->E);
+	    gsl_vector_set(cap->ce_curve.C, i, cap->C);
+	}
     }
 #ifdef DEBUG
-    fprintf(stdout, "Finished.\n");
+    fprintf(stdout, "(I) Finished.\n");
 #endif
 
     /* Write to file */
     if (filename != NULL) {
 #ifdef DEBUG
-	fprintf(stdout, "Writing data to file ...\n");
+	fprintf(stdout, "(I) Writing data to file ...\n");
 #endif
 	FILE * file = fopen(filename,"w");
-	for (i=0;i<cap->ce_curve->size1;i++) {
-	    fprintf(file, "%g ", gsl_matrix_get(cap->ce_curve, i, 0));
-	    fprintf(file, "%g ", gsl_matrix_get(cap->ce_curve, i, 1));
+	if (file == NULL) {
+	    fprintf(stderr, "(E) Error opening file \"%s\" for writing.\n", 
+		    filename);
+	    exit(1);
+	}
+	for (i=0; i<NumS; i++) {
+	    fprintf(file, "%g ", gsl_vector_get(cap->ce_curve.E, i));
+	    fprintf(file, "%g ", gsl_vector_get(cap->ce_curve.C, i));
+	    for (j = 0; j < cap->numIn; j++) {
+		fprintf(file, "%g ", gsl_matrix_get(cap->ce_curve.p, i, j));
+	    }
 	    fprintf(file, "\n");
 	}
 	fclose(file);
 #ifdef DEBUG
-	fprintf(stdout, "Finished.\n");
+	fprintf(stdout, "(I) Finished.\n");
 #endif
     }
 
@@ -316,7 +336,7 @@ blahut_cap *
 blahut_cap_setSRange(blahut_cap * cap, double s_L, double s_U, double step)
 {
     if (s_U < s_L) {
-	fprintf(stderr, "blahut_cap_setSRange:" 
+	fprintf(stderr, "(E) blahut_cap_setSRange:" 
 		"The upper limit %g is less than the lower limit %g.\n",
 		s_U, s_L);
 	exit(3);
