@@ -37,13 +37,7 @@ $(ExamplesTarget): $(LibObj) $(ExamplesObj)
 	done;
 
 clean:
-	rm -f *.o
-	rm -f *.so
-	rm -f blahut
-	rm -f blahut.exe
-	rm -f blahut
+	rm -f $(LibObj) $(LibName) $(ExamplesObj) $(ExamplesTarget)
+	rm -f $(ExampleDir)/ce.txt
 	rm -f *~
-	rm -f $(ExampleDir)/*.o
-	rm -f $(ExampleDir)/*.out
-	rm -f $(ExampleDir)/*.txt
 	rm -f $(ExampleDir)/*~
