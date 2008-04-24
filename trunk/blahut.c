@@ -311,3 +311,19 @@ blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename)
 
     return cap->ce_curve;
 }
+
+blahut_cap * 
+blahut_cap_setSRange(blahut_cap * cap, double s_L, double s_U, double step)
+{
+    if (s_U < s_L) {
+	fprintf(stderr, "blahut_cap_setSRange:" 
+		"The upper limit %g is less than the lower limit %g.\n",
+		s_U, s_L);
+	exit(3);
+    }
+    cap->s_L = s_L;
+    cap->s_U = s_U;
+    cap->s_d = step;
+
+    return cap;
+}

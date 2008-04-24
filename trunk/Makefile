@@ -1,10 +1,39 @@
-blahut:
-	gcc -g -c blahut.c main.c
-	gcc blahut.o main.o -o blahut -lm `gsl-config --libs`
+CC = gcc
+DEBUG = -g
+COPT = -c $(DEBUG) -I. -I..
+LINKOPT = -shared
+LIBS = -lm `gsl-config --libs`
+SHELL = /bin/sh
 
-lib:
-	gcc -g -c -fPIC blahut.c
-	gcc -shared blahut.o -o blahut.so -lm `gsl-config --libs`
+LibSource = blahut.c
+LibObj = blahut.o
+LibName = blahut.so
+ExampleDir = examples
+ExampleSources = $(ExampleDir)/bsc.c \
+	         $(ExampleDir)/main.c
+ExamplesObj = $(ExampleSources:.c=.o)
+ExamplesTarget = $(ExampleSources:.c=.out)
+
+# gcc -g -c -fPIC blahut.c
+# gcc -shared blahut.o -o blahut.so -lm `gsl-config --libs`
+
+%.o: %.c
+	$(CC) $(COPT) $< -o $@
+
+lib: $(LibObj)
+	$(CC) $(LINKOPT) $? -o $(LibName) $(LIBS)
+
+$(LibObj): $(LibSource)
+	$(CC) $(COPT) -fPIC $? -o $(LibObj)
+
+examples: $(ExamplesTarget)
+
+$(ExamplesTarget): $(LibObj) $(ExamplesObj) 
+	for i in $(ExamplesObj); \
+	    do \
+	      Target=$${i/.o/.out}; \
+	      $(CC) $$i $(LibObj) -o $$Target $(LIBS); \
+	done;
 
 clean:
 	rm -f *.o
@@ -13,3 +42,7 @@ clean:
 	rm -f blahut.exe
 	rm -f blahut
 	rm -f *~
+	rm -f $(ExampleDir)/*.o
+	rm -f $(ExampleDir)/*.out
+	rm -f $(ExampleDir)/*.txt
+	rm -f $(ExampleDir)/*~
