@@ -76,5 +76,7 @@ blahut_cap_set_p_uniform( blahut_cap * cap );
 gsl_matrix * 
 blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename);
 
+blahut_cap * 
+blahut_cap_setSRange(blahut_cap * cap, double s_L, double s_U, double step);
 #endif /*  __BLAHUT_H__ */
 
