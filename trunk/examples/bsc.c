@@ -3,11 +3,36 @@
 
 #include "blahut.h"
 
-int main()
+int main(int argc, char * argv[])
 {
+    /* At most one argument from command line is allowd to specify
+     * the cross over probability */
+    char ** end;
+    double p;	/* Setting the cross over probability */
+    if (argc > 2) {
+	fprintf(stderr, "(E) At most one argument is allowd to specify"
+		"the cross over probability p\n");
+	exit(1);
+    } else if (argc == 2) {
+	p = strtod(argv[1], end);
+	if ( p==HUGE_VAL||p==-HUGE_VAL ) {
+	    fprintf(stderr, "(E) Double overflows in %s.\n", argv[1]);
+	    exit(1);
+	} else if (*end == argv[1]) {
+	    fprintf(stderr, "(E) Not a valid double: %s.\n", argv[1]);
+	    exit(1);
+	}
+	fprintf(stdout, "(E) Cross over probability set to %g.\n", p);
+    } else if (argc == 1) {
+	fprintf(stdout, "(W) Default value of p is used.\n");
+	p = 0.2;	/* Take the default value */
+    } else {
+	/* no else */
+	exit(10);
+    }
+
     /* Specify the forward transition matrix
      * and the expense schedule vector */
-    double p = 0; 	/* the cross over probability */
     double QQ[] = {1-p, p, p, 1-p};
     double ee[] = {1, 0};
 
