@@ -9,6 +9,17 @@
 
 #ifndef __BLAHUT_H__
 #define __BLAHUT_H__
+/* This structure stores the estimated capacity-exapense curve
+ * and the optimizing input probability distribution.
+ * The length of the three vectors are the same. */
+struct blahut_ce_curve_str {
+    unsigned int len;
+    gsl_matrix * p;
+    gsl_vector * E;
+    gsl_vector * C;
+};
+typedef struct blahut_ce_curve_str blahut_ce_curve;
+
 struct blahut_constrained_capacity {
     /* These two members must be specified */
     gsl_matrix *	Q;	/* the foward transition matrix */
@@ -18,10 +29,13 @@ struct blahut_constrained_capacity {
     gsl_matrix *	P;	/* the backward transition matrix */
     gsl_vector *	c;	/* the capacity vector c_j */
 
-    /* a M x 2 matrix storing the Expense and corresponding Capacity.
-       M = floor((s_U - s_L)/s_d), only used when iterating over
-       s, otherwise this field is always set to NULL */
+    /* A M x (2+numIn) matrix storing the Expense and corresponding Capacity, 
+     *   and the maximizing p vector. M = floor((s_U - s_L)/s_d). 
+     * Only used when iterating over s, DO NOT use this varaible otherwise. */
+    /*
     gsl_matrix *	ce_curve;	
+    */
+    blahut_ce_curve 	ce_curve;
 
     int		numIn;	/* This is the # rows in Q matrix
 				   and the # col. in P matrix */
@@ -73,7 +87,7 @@ blahut_cap_calc( blahut_cap * cap );
 blahut_cap * 
 blahut_cap_set_p_uniform( blahut_cap * cap );
 
-gsl_matrix * 
+blahut_ce_curve 
 blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename);
 
 blahut_cap * 

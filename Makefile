@@ -1,6 +1,6 @@
 CC = gcc
 DEBUG = -g
-COPT = -c $(DEBUG) -I. -I..
+COPT = -c -Wall $(DEBUG) -I. -I..
 LINKOPT = -shared
 LIBS = -lm `gsl-config --libs`
 SHELL = /bin/sh
@@ -10,7 +10,7 @@ LibObj = blahut.o
 LibName = blahut.so
 ExampleDir = examples
 ExampleSources = $(ExampleDir)/bsc.c \
-	         $(ExampleDir)/main.c
+	         $(ExampleDir)/example1.c
 ExamplesObj = $(ExampleSources:.c=.o)
 ExamplesTarget = $(ExampleSources:.c=.out)
 
