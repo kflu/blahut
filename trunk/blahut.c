@@ -2,7 +2,7 @@
 #include "blahut.h"
 
 #define DEBUG 
-// #define DEBUG_PRINT_WARNING /* print warning message */
+ #define DEBUG_PRINT_WARNING /* print warning message */
 #define DEFAULT_MAX_IT UINT_MAX
 #define DOUBLE_COMP_LIMIT 1e8
 
@@ -116,9 +116,15 @@ blahut_cap_free( blahut_cap* cap)
     gsl_matrix_free(cap->P);
     gsl_vector_free(cap->p);
     gsl_vector_free(cap->c);
-    gsl_matrix_free(cap->ce_curve.p);
-    gsl_vector_free(cap->ce_curve.E);
-    gsl_vector_free(cap->ce_curve.C);
+    if (cap->ce_curve.p) {
+	gsl_matrix_free(cap->ce_curve.p);
+    }
+    if (cap->ce_curve.E) {
+	gsl_vector_free(cap->ce_curve.E);
+    }
+    if (cap->ce_curve.C) {
+	gsl_vector_free(cap->ce_curve.C);
+    }
 
     free(cap);
 }

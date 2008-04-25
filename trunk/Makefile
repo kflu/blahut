@@ -11,7 +11,8 @@ LibName = blahut.so
 ExampleDir = examples
 ExampleSources = $(ExampleDir)/bsc.c \
 	         $(ExampleDir)/example1.c \
-	         $(ExampleDir)/example2.c
+	         $(ExampleDir)/example2.c \
+	         $(ExampleDir)/ucBsc.c
 ExamplesObj = $(ExampleSources:.c=.o)
 ExamplesTarget = $(ExampleSources:.c=.out)
 
