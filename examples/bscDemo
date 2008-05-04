@@ -1,0 +1,16 @@
+#!/bin/sh
+# start tclsh in next line \
+exec tclsh "$0" "$@"
+
+set data "ce.txt";
+set step 0.1;
+for {set s 0} {$s <= 0.5} {set s [expr $s+$step]} {
+    lappend sList $s;
+}
+
+foreach s $sList {
+    exec {./bsc.out} $s;
+    exec mv $data "ce${s}.txt";
+}
+
+exec octave -i -q bscPlot.m
