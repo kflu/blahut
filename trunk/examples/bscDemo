@@ -10,7 +10,12 @@ for {set s 0} {$s <= 0.5} {set s [expr $s+$step]} {
 
 foreach s $sList {
     exec {./bsc.out} $s;
-    exec mv $data "ce${s}.txt";
+    exec mv -f $data "ce${s}.txt";
+    lappend txtList "ce${s}.txt";
 }
 
 exec octave -i -q bscPlot.m
+
+foreach file $txtList {
+    exec rm -f $file;
+}
