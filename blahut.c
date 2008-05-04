@@ -1,9 +1,19 @@
 #include <assert.h>
 #include "blahut.h"
+ 
+/* print useful information about what is going on */
+#define DEBUG
 
-#define DEBUG 
- #define DEBUG_PRINT_WARNING /* print warning message */
+/* print result in calculation for algorithm correctness check*/
+/* #define DEBUG_Calc */
+
+/* print warning message */
+#define DEBUG_PRINT_WARNING 
+
+/* Maximum amount of iteration allowed in calculating a point on C(E) curve */
 #define DEFAULT_MAX_IT UINT_MAX
+
+/* The range within wich 2 double values are judged as the same */
 #define DOUBLE_COMP_LIMIT 1e8
 
 /* 
@@ -13,6 +23,14 @@
 inline static double my_log2(const double value)
 {
     return log10(value)/log10(2);
+}
+
+/*
+ * Natural Logarithm.
+ */
+inline static double my_loge(const double value)
+{
+    return log(value);
 }
 
 static int 
@@ -100,6 +118,7 @@ blahut_cap_init( const gsl_matrix* Q,
     cap->c = gsl_vector_calloc(cap->numIn); /* numIn x 1 */
 
     /* The default values */
+    cap->unit = BITS;
     cap->s_L = 0.0;
     cap->s_U = 1e4;
     cap->s_d = 0.001;
@@ -139,6 +158,9 @@ sum_p_Q (const blahut_cap * cap, int k)
     for (j=0; j<cap->numIn; j++) {
 	sum += gsl_vector_get(cap->p, j) * gsl_matrix_get(cap->Q, j, k);
     }
+#ifdef DEBUG_Calc
+    fprintf(stdout, "(I) q_Y[%d] = %g\n", k, sum);
+#endif
     return sum;
 }
 
@@ -154,9 +176,13 @@ sum_Q_log (const blahut_cap * cap, int j)
     for (k=0; k<cap->numOut; k++) {
 	Q_kj = gsl_matrix_get(cap->Q, j, k);
 	/* use the convention that 0log0 = 0 */
-	sum += (Q_kj == 0 ? 0 : Q_kj * my_log2 (Q_kj/sum_p_Q(cap,k)));
+	sum += (Q_kj == 0 ? 0 : Q_kj * my_loge (Q_kj/sum_p_Q(cap,k)));
     }
 
+#ifdef DEBUG_Calc
+    fprintf(stdout, "sum_k Q_k|%d * log(Q_k|%d/q_Y[k]) = %g\n",
+	    j,j,sum);
+#endif
     return sum;
 }
 
@@ -168,6 +194,9 @@ static blahut_cap * calc_c_j ( blahut_cap * cap )
 	gsl_vector_set(cap->c, j, 
 		exp(sum_Q_log(cap, j)
 		    - cap->s * gsl_vector_get(cap->e,j)));
+#ifdef DEBUG_Calc
+	fprintf(stdout, "(I) c[%d] = %g\n", j, gsl_vector_get(cap->c,j));
+#endif
     }
     return cap;
 }
@@ -179,13 +208,13 @@ inline static double calc_I_L (blahut_cap * cap)
     for (j=0; j<cap->numIn; j++) {
 	sum += gsl_vector_get(cap->p,j) * gsl_vector_get(cap->c,j);
     }
-    cap->I_L = my_log2(sum);
+    cap->I_L = my_loge(sum);
     return cap->I_L;
 }
 
 inline static double calc_I_U (blahut_cap * cap)
 {
-    cap->I_U = my_log2(gsl_vector_max ( cap->c ));
+    cap->I_U = my_loge(gsl_vector_max ( cap->c ));
     return cap->I_U;
 }
 
@@ -217,9 +246,21 @@ static double calc_E(blahut_cap * cap)
     return sum;
 }
 
-inline static double calc_C(blahut_cap * cap)
+static double calc_C(blahut_cap * cap)
 {
     cap->C = cap->s * cap->E + cap->I_L;
+
+    if (cap->unit == NATS) {
+	return cap->C;
+    } else if (cap->unit == BITS) {
+	cap->C = my_log2(exp(cap->C));
+	return cap->C;
+    } else {
+	fprintf(stderr, "(W) Wrong information unit specified:%d, "
+		"using the default: %d\n", cap->unit, BITS);
+	cap->unit = BITS;
+	calc_C(cap);
+    }
     return cap->C;
 }
     

@@ -9,6 +9,15 @@
 
 #ifndef __BLAHUT_H__
 #define __BLAHUT_H__
+
+/*
+ * This type is used to determine the unit used to measure information.
+ */
+typedef enum {
+    BITS, 
+    NATS
+} blahut_unit;
+
 /* This structure stores the estimated capacity-exapense curve
  * and the optimizing input probability distribution.
  * The length of the three vectors are the same. */
@@ -21,6 +30,8 @@ struct blahut_ce_curve_str {
 typedef struct blahut_ce_curve_str blahut_ce_curve;
 
 struct blahut_constrained_capacity {
+    /* Unit used to express the channel capacity */
+    blahut_unit	unit;
     /* These two members must be specified */
     gsl_matrix *	Q;	/* the foward transition matrix */
     gsl_vector *	e;	/* the expense vector */

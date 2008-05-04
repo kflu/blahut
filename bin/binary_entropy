@@ -1,0 +1,18 @@
+#!/bin/sh
+# next line restart with tclsh \
+exec tclsh "$0" "$@"
+
+set base 2;
+set p [lindex $argv 0];
+
+proc my_log {base value} {
+    return [expr {log10($value)/log10($base)}];
+}
+
+# puts "log( $p ) = [my_log 2 $p]"
+
+set H [expr { - $p * [my_log $base $p] - (1-$p) * [my_log $base [expr {1-$p}]]}];
+
+puts "$H";
+
+exit 1;
