@@ -24,8 +24,8 @@ int main(int argc, char * argv[])
 	}
 	fprintf(stdout, "(I) Cross over probability set to %g.\n", q);
     } else if (argc == 1) {
-	fprintf(stdout, "(W) Default value of q is used.\n");
-	q = 0.2;	/* Take the default value */
+	q = 0.0;	/* Take the default value */
+	fprintf(stdout, "(W) Default value of q=%g is used.\n",q);
     } else {
 	/* no else */
 	exit(10);
