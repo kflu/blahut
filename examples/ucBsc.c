@@ -7,18 +7,18 @@ int main(int argc, char * argv[])
 {
     /* At most one argument from command line is allowd to specify
      * the cross over probability */
-    char ** end;
+    char * end;
     double p;	/* Setting the cross over probability */
     if (argc > 2) {
 	fprintf(stderr, "(E) At most one argument is allowd to specify"
 		"the cross over probability p\n");
 	exit(1);
     } else if (argc == 2) {
-	p = strtod(argv[1], end);
+	p = strtod(argv[1], &end);
 	if ( p==HUGE_VAL||p==-HUGE_VAL ) {
 	    fprintf(stderr, "(E) Double overflows in %s.\n", argv[1]);
 	    exit(1);
-	} else if (*end == argv[1]) {
+	} else if (end == argv[1]) {
 	    fprintf(stderr, "(E) Not a valid double: %s.\n", argv[1]);
 	    exit(1);
 	}
