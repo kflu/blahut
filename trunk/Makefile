@@ -8,7 +8,7 @@ SHELL = /bin/sh
 
 LibSource = blahut.c
 LibObj = blahut.o
-LibName = blahut.so
+LibName = libblahut.so
 ExampleDir = examples
 ExampleSources = $(ExampleDir)/bsc.c \
 	         $(ExampleDir)/example1.c \
