@@ -1,3 +1,4 @@
+SHELL = bash
 CC = gcc
 DEBUG = -g
 COPT = -c -Wall $(DEBUG) -I. -I..
@@ -33,7 +34,7 @@ examples: $(ExamplesTarget)
 $(ExamplesTarget): $(LibObj) $(ExamplesObj) 
 	for i in $(ExamplesObj); \
 	    do \
-	      Target=$${i/.o/.out}; \
+	      Target=`echo $$i|sed 's/.o/.out/g'`; \
 	      $(CC) $$i $(LibObj) -o $$Target $(LIBS); \
 	done;
 
