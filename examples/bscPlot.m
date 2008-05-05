@@ -21,5 +21,8 @@ plot(ce3(:,1),ce3(:,2), ';BSC, p=0.3;k-');
 plot(ce4(:,1),ce4(:,2), ';BSC, p=0.4;c-');
 plot(ce5(:,1),ce5(:,2), ';BSC, p=0.5;m-');
 
+% Print to file
+print('bsc_cap.eps','-depsc2');
+
 printf('Press anykey to continue...\n');
 pause;
