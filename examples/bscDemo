@@ -3,10 +3,7 @@
 exec tclsh "$0" "$@"
 
 set data "ce.txt";
-set step 0.1;
-for {set s 0} {$s <= 0.5} {set s [expr $s+$step]} {
-    lappend sList $s;
-}
+set sList [list 0 0.1 0.2 0.3 0.4 0.5];
 
 foreach s $sList {
     exec {./bsc.out} $s;
@@ -14,7 +11,7 @@ foreach s $sList {
     lappend txtList "ce${s}.txt";
 }
 
-exec octave -i -q bscPlot.m
+exec octave -q bscPlot.m
 
 foreach file $txtList {
     exec rm -f $file;
