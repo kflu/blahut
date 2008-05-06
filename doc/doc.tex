@@ -43,7 +43,8 @@ Figure \ref{fig:unconstrained_cap},\ref{fig:constrained_cap} show the algorithm 
  \label{fig:constrained_cap}
 \end{figure}
 
-\section{Case Studies}
+\section{Case Study}
+\label{sec:case_study}
 % Describe the problem. Analize theoretically first, then show algorithm results.
 \subsection{Binary Symmetric Channel}
 The forward transition matrix of a binary symmetric channel can be expressed as:
@@ -85,7 +86,7 @@ For any $E\in[E_{min},\ E_{max}]$, since $p^*=[1-\alpha,\ \alpha]^T$, we have $\
 Figure \ref{fig:bsc_cap} shows the result obtained by running the Blahut algorithm in the binary symmetric channel case, and $e=[0,\ 1]^T$. Different cross-over probabilities are tried and plotted on the same figure.
 \begin{figure}
  \centering
- \includegraphics[bb=50 50 410 302]{pic/bsc_cap.eps}
+ \includegraphics{pic/bsc_cap.eps}
  % bsc_cap.eps: 1179666x1179666 pixel, 300dpi, 9987.84x9987.84 cm, bb=50 50 410 302
  \caption{Capacity Expense Curve of Binrary Symmetric Channel for different cross-over probabilities. $e=[0\ 1]^T$}
  \label{fig:bsc_cap}
@@ -122,7 +123,7 @@ Naturally, $C_{max}=C_{unconstrained}$ is achieved as $\mathbf{p}=[1/3\ 1/3\ 1/3
 Figure \ref{fig:example1_cap} shows the Blahut algorithm estimation on this channel for expense schedule $e=[0,1,0]^T$.
 \begin{figure}
  \centering
- \includegraphics[bb=50 50 410 302]{pic/example1_cap.eps}
+ \includegraphics{pic/example1_cap.eps}
  % example1_cap.eps: 1179666x1179666 pixel, 300dpi, 9987.84x9987.84 cm, bb=50 50 410 302
  \caption{Capacity Expense Curve of Channel Described in Example 1. $e=[0,1,0]^T$.}
  \label{fig:example1_cap}
@@ -197,10 +198,57 @@ To build the library, copy it to the desired location, and type \verb|make| to b
 \begin{enumerate}
  \item Include \verb|blahut.h| in the source files
  \item Include /path/to/lib (path where ``libblahut.so'' locates) to the \verb|LD_LIBRARY_PATH| environment
- \item At the link stage, append linking options \verb|-L/path/to/lib -lm -lblahut `gsl-config --libs`| to the linker command
+ \item At the link stage, append linking options 
+\begin{verbatim}
+-L/path/to/lib -lm -lblahut `gsl-config --libs`
+\end{verbatim}
+ to the linker command
 \end{enumerate}
+\verb|make clan| will clean all the built objects and executables.
+
+An alternative way to use the library is even more straightforward: just compile the blahut.c to blahut.o, and then link the object file together with other objecte files. Note that when linking all the object files, append the option \verb|`gsl-config --libs`| to the linker, as GSL is used in the algorithm.
 
 \subsection{Objects and Meathods}
+The library was written in C programming language, in an object-oriented fashion. The main manipulating object type is structure \verb|blahut_cap|, which contains all the setting parameters and resulting data.
+
+The following functions are provided to manipulating an object of type \verb|blahut_cap|.
+\begin{verbatim}
+blahut_cap * 
+blahut_cap_init( const gsl_matrix* Q, 
+		   const gsl_vector* e );
+\end{verbatim}
+This function takes a forward transition matrix (of type \verb|gsl_matrix|) and an expense schedule (of type \verb|gsl_vector|) as arguments, and returns a pointer to an initialized (dynamically allocated) object of type \verb|blahut_cap|, which will be used for further specifying channel and algorithm parameters, storing estimated data.
+
+\begin{verbatim}
+void 
+blahut_cap_free( blahut_cap* cap);
+\end{verbatim}
+Since \verb|blahut_cap| is dynamically allocated, never forget to free the memory after using it. \verb|blahut_cap_free()| takes a pointer to a capacity object and frees the corresponding object and all the relavant memory.
+Note: do not free this pointer by using \verb|free()| from standard C, as some pointers in that object also pointing to dynamically allocated memory blocks.
+
+\begin{verbatim}
+blahut_cap * 
+blahut_cap_setSRange(blahut_cap * cap, double s_L, double s_U, double step);
+\end{verbatim}
+After an \verb|blahut_cap| object has been initialized, this function is used to set the $s$ ranges (refer to figure \ref{constrained_cap}) to obtain a series of points on the C(E) curve. Different $s$ value corresponds to expenses, $s=0$ corresponds to unconstrained (or $E_{max}$) case.
+
+\begin{verbatim}
+blahut_cap *
+blahut_cap_calc( blahut_cap * cap );
+\end{verbatim}
+When given a specific $s$, this function iterates and estimates a corresponding capacity.
+
+\begin{verbatim}
+blahut_ce_curve 
+blahut_cap_iterate_over_s( blahut_cap * cap, const char* filename);
+\end{verbatim}
+After setting the $s$ range, this function starts iterating over all $s$ values by calling \verb|blahut_cap_calc()| function repeatedly.
+
 \subsection{Utilities}
+\subsubsection{Demos}
+The three examples illustrated in section \ref{sec:case_study} are provided as demos in subdirectory examples/. To build the examples, type command \verb|make examples|, to demonstrating examples, type commands: \verb|./bscDemo|, \verb|./example1Demo|, \verb|example2Demo| respectively. Note that to use the demos, make sure GNU Plot and GNU Octave are installed correctly.
+
+\subsubsection{Calculating Binary Entropy Function}
+A small utility is provided to compute the binary entropy function $\mathcal{H}(.)$. To invoke the utility, \verb|cd| to subdirectory bin/, and execute command \verb|./binary_entropy p|, where $p$ is a real number between 0 and 1.
  
 \end{document}
