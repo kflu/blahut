@@ -28,6 +28,8 @@ In this project, the Blahut algorithm for estimating capacity-expense function i
 
 Figure \ref{fig:unconstrained_cap},\ref{fig:constrained_cap} show the algorithm for estimating the unconstrained capacity and the constrained capacity. They were originally published in R.E.Blahut's paper \textit{Computation of Channel Capacity and Rate-Distortion Functions} in 1972. 
 
+The rest of the report is organized as following. Section \ref{sec:case_study} gives three examples to validate the implementation of the algorithm. Section \ref{Sec:Library_Use} illustrate how to install and use the library.
+
 \begin{figure}
  \centering
  \includegraphics[width=0.5\textwidth]{pic/unconstrained_cap.eps}
@@ -188,6 +190,7 @@ The case when $p=1/3$ is estimated using Blahut algorithm and is shown in figure
 \end{figure}
 
 \section{Library Usage}
+\label{Sec:Library_Use}
 % Manual for the library.
 \subsection{Installation}
 To use the library, one must have GNU Scientific Library (GSL) installed. GSL is used in this library for mathematical and matrix manipulations. In fact, this library is intend to be an extension of GSL. 
