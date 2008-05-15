@@ -43,3 +43,4 @@ clean:
 	rm -f $(ExampleDir)/ce.txt
 	rm -f *~
 	rm -f $(ExampleDir)/*~
+	rm -f doc/*.pdf doc/*.dvi doc/*.log doc/*.aux doc/*~
