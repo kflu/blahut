@@ -1,18 +1,15 @@
 #!/bin/sh
-# start tclsh in next line \
-exec tclsh "$0" "$@"
 
-set data "ce.txt";
-set sList [list 0 0.1 0.2 0.3 0.4 0.5];
+sList='0 0.1 0.2 0.3 0.4 0.5';
+data='ce.txt';
 
-foreach s $sList {
-    exec {./bsc.out} $s;
-    exec mv -f $data "ce${s}.txt";
-    lappend txtList "ce${s}.txt";
-}
+for s in $sList; do \
+  ./bsc.out $s;
+  mv -f $data ce$s.txt;
+  txtList="$txtList ce$s.txt";
+done;
 
-exec octave -q bscPlot.m
+echo "Plotting data..."
+octave -q bscPlot.m
 
-foreach file $txtList {
-    exec rm -f $file;
-}
+rm -f $txtList
