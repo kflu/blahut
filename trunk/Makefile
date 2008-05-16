@@ -1,4 +1,4 @@
-SHELL = bash
+# SHELL = bash
 CC = gcc
 DEBUG = -g
 COPT = -c -Wall $(DEBUG) -I. -I..
@@ -43,4 +43,5 @@ clean:
 	rm -f $(ExampleDir)/ce.txt
 	rm -f *~
 	rm -f $(ExampleDir)/*~
+	rm -f $(ExampleDir)/*.eps
 	rm -f doc/*.pdf doc/*.dvi doc/*.log doc/*.aux doc/*~
