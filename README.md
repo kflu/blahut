@@ -1,4 +1,4 @@
-Click [here](doc/doc.pdf) for documentation on using the library, the implementation, and the theory behind.
+Migrated from [the old Google code repository](https://code.google.com/archive/p/blahut/). Click [here](doc/doc.pdf) for documentation on using the library, the implementation, and the theory behind.
 
 Description
 ----------
